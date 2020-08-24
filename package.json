@@ -1,0 +1,24 @@
+{
+  "name": "p5js-webpack-particle-flows-2d",
+  "version": "0.0.1",
+  "description": "p5js-webpack-particle-flows-2d",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atorov/p5js-webpack-particle-flows-2d.git"
+  },
+  "author": "atorov",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "start": "webpack-dev-server --content-base dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^7.7.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  }
+}
