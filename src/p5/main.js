@@ -1,50 +1,98 @@
 new p5((sketch) => {
     const s = sketch
 
-    //     let data = {}
+    const counterMin = 0
+    const counterMax = 450
+    const counterInit = 450
+    let counter = counterInit
+    let counterInc = 1
 
-    //     const imgTileArr = []
-    //     let imgSrc
-
+    let imgSrc
     let pgGravityField
+    let pgSrc
 
     s.preload = () => {
-        // imgSrc = s.loadImage(...)
+        imgSrc = s.loadImage('/assets/source-3.jpg')
     }
 
     s.setup = () => {
-        s.createCanvas(1280 / 3, 720 / 3) // TODO:
-        s.colorMode(s.RGB, 1)
-        s.imageMode(s.CENTER)
-        // s.translate(s.width / 2, s.height / 2)
+        s.createCanvas(1280 / 20, 720 / 20) // TODO:
+        s.noiseSeed(117)
 
-        s.background(0)
+        // pgSrc
+        pgSrc = s.createGraphics(s.width, s.height)
+        pgSrc.imageMode(s.CENTERS)
+        pgSrc.image(imgSrc, 0, 0, pgSrc.width, pgSrc.height)
 
         // pgGravityField
         pgGravityField = s.createGraphics(s.width, s.height)
-        pgGravityField.colorMode(s.RGB, 1)
     }
 
     s.draw = async () => {
         s.translate(s.width / 2, s.height / 2)
 
+        if (counter <= counterMin) {
+            counterInc = Math.abs(counterInc)
+        }
+        else if (counter >= counterMax) {
+            counterInc = -Math.abs(counterInc)
+        }
+
+        counter += counterInc
+        console.log('::: counter:', counter)
+
+        const distortion = s.constrain((counter / counterMax) ** 2, 0, 1)
+        console.log('::: distortion:', distortion)
+
+        const bgnd = s.map(s.noise(counter / 155), 0, 1, 0, 255)
+        s.background(bgnd)
+
+        // pgSrc
+        // s.imageMode(s.CENTERS)
+        // s.image(pgSrc, -s.width / 2, -s.height / 2, s.width, s.height)
+
         // pgGravityField
         for (let x = 0; x < pgGravityField.width; x++) {
             for (let y = 0; y < pgGravityField.height; y++) {
-                pgGravityField.stroke(s.noise(x / 75, y / 75, 100 + s.frameCount / 15))
+                const re = s.noise(x / 75, y / 75, 110 + counter / 125) * 255
+                const gr = s.noise(x / 75, y / 75, 120 + counter / 125) * 255
+                const bl = s.noise(x / 75, y / 75, 130 + counter / 125) * 255
+                pgGravityField.stroke(re, gr, bl)
+                pgGravityField.strokeWeight(1)
                 pgGravityField.point(x, y)
             }
         }
-        s.image(pgGravityField, 0, 0)
 
-        const offsetX = s.map(s.noise(s.frameCount / 25, 0, 200), 0, 1, -s.width / 2, s.width / 2)
-        const offsetY = s.map(s.noise(0, s.frameCount / 25, 200), 0, 1, -s.height / 2, s.height / 2)
-        s.stroke(255, 0, 0)
-        s.fill(255, 0, 0)
-        s.circle(offsetX, offsetY, 10)
+        // Display
+        for (let x = 0; x < pgSrc.width; x++) {
+            for (let y = 0; y < pgSrc.height; y++) {
+                const srcCo = pgSrc.get(x, y)
+                const parCo = srcCo
+                const parRe = s.red(parCo)
+                const parGr = s.green(parCo)
+                const parBl = s.blue(parCo)
+
+                const gfCo = pgGravityField.get(x, y)
+                const gfRe = s.red(gfCo)
+                const gfGr = s.green(gfCo)
+                const gfBl = s.blue(gfCo)
+
+                const parBr = s.brightness(gfCo)
+                const parAl = s.map(parBr * distortion, 100, 0, 0, 255) / (255 * distortion)
+
+                const parShiftX = s.map(gfRe, 0, 255, -s.width, s.width) * distortion
+                const parShiftY = s.map(gfGr, 0, 255, -s.height, s.height) * distortion
+                const parSize = s.map(gfBl, 0, 255, 1.5, 1.5 + ((s.width ** 2 + s.height ** 2) ** 0.5) * 0.5 * distortion)
+
+                s.noStroke()
+                s.fill(parRe, parGr, parBl, parAl)
+                s.ellipseMode(s.CENTER)
+                s.circle(
+                    x + parShiftX - s.width / 2,
+                    y + parShiftY - s.height / 2,
+                    parSize,
+                )
+            }
+        }
     }
-
-    //     s.keyPressed = () => {
-    //         }
-    //     }
 }, 'p5-main')
